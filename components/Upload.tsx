@@ -1,21 +1,32 @@
 import { useState, useCallback } from "react";
 import { useOutletContext } from "react-router";
 import { CheckCircle2, ImageIcon, UploadIcon } from "lucide-react";
-import { PROGRESS_INTERVAL_MS, PROGRESS_STEP, REDIRECT_DELAY_MS } from "../lib/constants";
+import {
+  PROGRESS_INTERVAL_MS,
+  PROGRESS_STEP,
+  REDIRECT_DELAY_MS,
+} from "../lib/constants";
 
 interface UploadProps {
   onComplete?: (base64: string) => void;
 }
 
 export const Upload = ({ onComplete }: UploadProps) => {
+  const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const { isSignedIn } = useOutletContext<AuthContext>();
 
   const processFile = (file: File) => {
     if (!isSignedIn) return;
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setError("File exceeds the 50MB limit.");
+      return;
+    }
+    setError(null);
 
     setFile(file);
     setProgress(0);
@@ -39,26 +50,32 @@ export const Upload = ({ onComplete }: UploadProps) => {
     reader.readAsDataURL(file);
   };
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    if (isSignedIn) setIsDragging(true);
-  }, [isSignedIn]);
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (isSignedIn) setIsDragging(true);
+    },
+    [isSignedIn],
+  );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (!isSignedIn) return;
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      if (!isSignedIn) return;
 
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && droppedFile.type.startsWith("image/")) {
-      processFile(droppedFile);
-    }
-  }, [isSignedIn]);
+      const droppedFile = e.dataTransfer.files[0];
+      if (droppedFile && droppedFile.type.startsWith("image/")) {
+        processFile(droppedFile);
+      }
+    },
+    [isSignedIn],
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!isSignedIn) return;
@@ -94,6 +111,7 @@ export const Upload = ({ onComplete }: UploadProps) => {
                 : "Please sign in to upload files"}
             </p>
             <p className={"help"}>Maximum file size: 50MB</p>
+            {error && <p className={"help"}>{error}</p>}
           </div>
         </div>
       ) : (
