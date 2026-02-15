@@ -1,20 +1,22 @@
-import {useParams} from "react-router";
+import {useLocation, useParams} from "react-router";
 
 
 export default function Visualizer() {
     const { id } = useParams();
-
+    const location= useLocation()
+    const {initialImage, name} = location.state as any;
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold">
-                Room Visualizer
-            </h1>
-
-            <p className="text-gray-500">
-                Session ID: {id}
-            </p>
-
-            {/* Canvas / WebGL / Layout editor here */}
-        </div>
+      <section >
+          <h1>{name ||"Untitled Project"}</h1>
+          <div className={"visualizer"}>
+              {
+                  initialImage && (
+                      <div className={"image-container"}>
+                        <h2>Source Image</h2>
+                          <img src={initialImage} alt={"Source Image"}/>
+                  </div>)
+              }
+          </div>
+      </section>
     );
 }
