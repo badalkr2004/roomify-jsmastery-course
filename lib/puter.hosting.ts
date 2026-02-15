@@ -28,7 +28,6 @@ export const getOrCreateHostingConfig =
       return null;
     }
   };
-  };
 
 export const uploadImageToHosting = async ({
   hosting,
