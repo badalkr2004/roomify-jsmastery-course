@@ -22,19 +22,19 @@ export default function Home() {
       timestamp: Date.now(),
     };
 
-    const saved = await createProject({ item: newItem, visibility: "private" });
-    if (!saved) {
-      console.error("Failed to create project");
-      return false;
-    }
-    setProjects((prev) => [newItem, ...prev]);
-    navigate(`/visualizer/${newId}`, {
-      state: {
-        initialImage: saved.sourceImage,
-        initialRender: saved.renderedImage || null,
-        name,
-      },
-    });
+const saved = await createProject({ item: newItem, visibility: "private" });
+if (!saved) {
+  console.error("Failed to create project");
+  return false;
+}
+setProjects((prev) => [saved, ...prev]);
+navigate(`/visualizer/${newId}`, {
+  state: {
+    initialImage: saved.sourceImage,
+    initialRender: saved.renderedImage || null,
+    name,
+  },
+});
     return true;
   };
 
