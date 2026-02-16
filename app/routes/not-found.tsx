@@ -1,3 +1,5 @@
+import {Link} from "react-router";
+
 export function loader() {
   return new Response("Not Found", { status: 404 });
 }
@@ -7,9 +9,9 @@ export default function NotFound() {
     <div className="flex flex-col items-center justify-center min-h-screen">
       <h1 className="text-4xl font-bold">404 - Not Found</h1>
       <p className="mt-4">The page you are looking for does not exist.</p>
-      <a href="/" className="mt-6 text-blue-500 hover:underline">
+      <Link to="/" className="mt-6 text-blue-500 hover:underline">
         Go back home
-      </a>
+      </Link>
     </div>
   );
 }
