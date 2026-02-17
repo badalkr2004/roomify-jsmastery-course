@@ -3,40 +3,56 @@ import { ArrowRight, ArrowUp, ArrowUpRight, Clock, Layers } from "lucide-react";
 import Button from "../../components/ui/Button";
 import { Upload } from "../../components/Upload";
 import { useNavigate } from "react-router";
-import { useState } from "react";
-import { createProject } from "../../lib/puter.action";
+import {useEffect, useRef, useState} from "react";
+import {createProject, getProjects} from "../../lib/puter.action";
 
 export default function Home() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<DesignItem[]>([]);
 
+  const isCreatingRef = useRef(false);
+
   const handleUploadComplete = async (base64: string) => {
-    const newId = Date.now().toString();
+   try {
+     if (isCreatingRef.current) return false;
+     isCreatingRef.current = true;
+     const newId = Date.now().toString();
 
-    const name = `Residence ${newId}`;
-    const newItem = {
-      id: newId,
-      name,
-      sourceImage: base64,
-      renderedImage: undefined,
-      timestamp: Date.now(),
-    };
+     const name = `Residence ${newId}`;
+     const newItem = {
+       id: newId,
+       name,
+       sourceImage: base64,
+       renderedImage: undefined,
+       timestamp: Date.now(),
+     };
 
-const saved = await createProject({ item: newItem, visibility: "private" });
-if (!saved) {
-  console.error("Failed to create project");
-  return false;
-}
-setProjects((prev) => [saved, ...prev]);
-navigate(`/visualizer/${newId}`, {
-  state: {
-    initialImage: saved.sourceImage,
-    initialRender: saved.renderedImage || null,
-    name,
-  },
-});
-    return true;
+     const saved = await createProject({ item: newItem, visibility: "private" });
+     if (!saved) {
+       console.error("Failed to create project");
+       return false;
+     }
+     setProjects((prev) => [saved, ...prev]);
+     navigate(`/visualizer/${newId}`, {
+       state: {
+         initialImage: saved.sourceImage,
+         initialRender: saved.renderedImage || null,
+         name,
+       },
+     });
+     return true;
+   }finally{
+     isCreatingRef.current = false;
+   }
   };
+
+  useEffect(()=>{
+    const fetchProjects = async()=> {
+       const items = await getProjects()
+       setProjects(items)
+    }
+    fetchProjects()
+  },[])
 
   return (
     <div className="home">
@@ -92,14 +108,9 @@ navigate(`/visualizer/${newId}`, {
           <div className={"projects-grid"}>
             {projects.map(
               ({ id, name, timestamp, sourceImage, renderedImage }) => (
-                <div className={"project-card group"} key={id}>
+                <div className={"project-card group"} key={id} onClick={()=>navigate(`/visualizer/${id}`)}>
                   <div className={"preview"}>
-                    <img
-                      src={
-                       renderedImage || sourceImage
-                      }
-                      alt={"Project"}
-                    />
+                    <img src={renderedImage || sourceImage} alt={"Project"} />
 
                     <div className={"badge"}>
                       <span>Community</span>
@@ -111,9 +122,7 @@ navigate(`/visualizer/${newId}`, {
 
                       <div className={"meta"}>
                         <Clock size={12} />
-                        <span>
-                          {new Date(timestamp).toLocaleDateString()}
-                        </span>
+                        <span>{new Date(timestamp).toLocaleDateString()}</span>
                         <span>By Badal Kumar</span>
                       </div>
                     </div>
