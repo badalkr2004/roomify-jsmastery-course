@@ -1,9 +1,10 @@
+node_modules
 .DS_Store
 .env
-/node_modules/
+.env.local
 
 # React Router
 /.react-router/
 /build/
-.env
+# .env is already listed above
 .idea
