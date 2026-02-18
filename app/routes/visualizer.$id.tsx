@@ -22,12 +22,25 @@ export default function Visualizer() {
 
   const handleBack = () => navigate("/");
 
+  const getExportExtension = (src: string) => {
+    const dataMatch = src.match(/^data:(image\/[a-zA-Z0-9.+-]+);/);
+    if (dataMatch) return dataMatch[1].split("/")[1];
+    try {
+      const { pathname } = new URL(src, window.location.href);
+      const ext = pathname.split(".").pop();
+      return ext || "png";
+    } catch {
+      return "png";
+    }
+  };
+
   const handleExport = () => {
     if (!currentImage) return;
 
     const link = document.createElement("a");
     link.href = currentImage;
-    link.download = `roomify-render-${id || "new"}.png`;
+    const ext = getExportExtension(currentImage);
+    link.download = `roomify-render-${id || "new"}.${ext}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
